@@ -1,0 +1,22 @@
+const WEBHOOK_URL = 'https://Webhook Production URLs/webhook/research-keywords/submit?key=MySecret1234';
+
+function onFormSubmit(e) {
+  try {
+    const sheet = e.range.getSheet();
+    const lastCol = sheet.getLastColumn();
+    const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0];
+    const row = e.values;
+
+    const payload = {};
+    headers.forEach((h, i) => payload[h] = row[i]);
+
+    UrlFetchApp.fetch(WEBHOOK_URL, {
+      method: 'post',
+      contentType: 'application/json',
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true,
+    });
+  } catch (err) {
+    Logger.log("ERROR: " + err);
+  }
+}
