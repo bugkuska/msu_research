@@ -1,0 +1,2043 @@
+{
+  "name": "WF06 – Scholarly Paper Retrieval-n8ncloud",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.openalex.org/works",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "filter",
+              "value": "={{ (() => {\n  const selectedPeriod = String(\n    $json[\"ช่วงปีที่ต้องการ\"] || \"5 ปีล่าสุด\"\n  );\n\n  const match = selectedPeriod.match(/\\d+/);\n  const numberOfYears = match ? Number(match[0]) : 5;\n\n  const endYear = $now.year;\n  const startYear = endYear - numberOfYears + 1;\n\n  return `from_publication_date:${startYear}-01-01,to_publication_date:${endYear}-12-31,has_doi:true,has_abstract:true`;\n})() }}"
+            },
+            {
+              "name": "per-page",
+              "value": "10"
+            },
+            {
+              "name": "search",
+              "value": "={{ $json.openalex_query }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        304
+      ],
+      "id": "9b4820c4-c1e0-423f-9f06-e9b254b3cea2",
+      "name": "OpenAlex"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1664,
+        208
+      ],
+      "id": "475e860f-f3c4-4c47-9c1c-0b729137b274",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "bd67035c-6e6d-40c4-8725-178544c84d1a",
+              "leftValue": "={{ $json.processed === true || $json.processed === 'true' }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2784,
+        112
+      ],
+      "id": "65d6c6f2-0d2d-41b1-8307-e43ac5e3314f",
+      "name": "If (processed / ยืนยัน)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "84043fa3-657e-4029-b953-81134fe778e4",
+              "name": "ชื่อ-นามสกุล ",
+              "value": "={{ $json['ชื่อ-นามสกุล '] }}",
+              "type": "string"
+            },
+            {
+              "id": "85a81ad9-e697-4698-909c-cd28a8e7164c",
+              "name": "อีเมล",
+              "value": "={{ $json['อีเมล'] }}",
+              "type": "string"
+            },
+            {
+              "id": "3b00c9d5-bd63-4969-bee4-6e088464306d",
+              "name": "สังกัด/รายวิชา/โครงงาน",
+              "value": "={{ $json['สังกัด/รายวิชา/โครงงาน'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4fc4ea00-a382-408e-8871-9b50fff4645a",
+              "name": "คำค้นงานวิจัย (คำสำคัญ): ",
+              "value": "={{ $json['คำค้นงานวิจัย'] }}",
+              "type": "string"
+            },
+            {
+              "id": "bd6fa23d-92d5-4007-b920-ab6a02493ccd",
+              "name": "ช่วงปีที่ต้องการ",
+              "value": "={{ $json['ช่วงปีที่ต้องการ'] }}",
+              "type": "string"
+            },
+            {
+              "id": "d07cc185-6828-4a76-bf03-f5b0e7324f43",
+              "name": "ประเภทงานวิจัย",
+              "value": "={{ $json['ประเภทงานวิจัย'] }}",
+              "type": "string"
+            },
+            {
+              "id": "10fdd384-6d1b-48b8-a5df-6621c00d7524",
+              "name": "ระดับผลลัพธ์",
+              "value": "={{ $json['ระดับผลลัพธ์'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ac9ee19a-8ea1-42b3-a1de-a7657e3b5b19",
+              "name": "จำนวนงานวิจัย",
+              "value": "={{ $json['จำนวนงานวิจัย'] }}",
+              "type": "string"
+            },
+            {
+              "id": "fff34e81-5dac-4434-8b2c-90b3e637794b",
+              "name": "หมายเหตุ",
+              "value": "={{ $json['หมายเหตุ'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b26c7e9e-0e99-493e-b380-7186300485b7",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            },
+            {
+              "id": "5e055d19-9913-4cc9-87e5-6debed8f95b2",
+              "name": "Timestamp",
+              "value": "={{ $json.Timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "ff253f59-35c5-4e84-bf86-34929a25e49a",
+              "name": "research_request_summary",
+              "value": "=ค้นหางานวิจัยเกี่ยวกับ: {{ $json['คำค้นงานวิจัย'] }}\nช่วงปี: {{ $json[\"ช่วงปีที่ต้องการ\"] }}\nประเภทงานวิจัย: {{ $json[\"ประเภทงานวิจัย\"] }}\nจำนวนประมาณ: {{ $json[\"จำนวนงานวิจัย\"] }} เรื่อง\nระดับสรุป: {{ $json[\"ระดับผลลัพธ์\"] }}\nหมายเหตุ: {{ $json[\"หมายเหตุ\"] || \"-\" }}\n",
+              "type": "string"
+            },
+            {
+              "id": "987d7d16-2b54-4980-8122-8c11c4a6b0d9",
+              "name": "query",
+              "value": "={{ $json['คำค้นงานวิจัย'] }}",
+              "type": "string"
+            },
+            {
+              "id": "1c988256-d766-41cc-8eb7-9ad5a153d388",
+              "name": "openalex_query",
+              "value": "={{ $json['คำค้นงานวิจัย'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ed1cc0e6-a8fd-4d2d-89b0-c78dc8035a9e",
+              "name": "semantic_query",
+              "value": "={{ $json['คำค้นงานวิจัย'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2560,
+        208
+      ],
+      "id": "d78f1d69-405c-4769-80f6-be219d670d9f",
+      "name": "Edit Fields (สร้าง query + prompt)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f54975f-ad64-43c5-9cf3-b0ddcc98af15",
+              "name": "source",
+              "value": "openalex",
+              "type": "string"
+            },
+            {
+              "id": "5e97bce8-e131-43ea-be9f-2cc36c138fde",
+              "name": "title",
+              "value": "={{ $json.title || $json.display_name || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "df7e078d-a594-4b91-a8c7-7e376b60084d",
+              "name": "authors",
+              "value": "={{ Array.isArray($json.authorships) ? $json.authorships.map(a => a.author?.display_name || \"\").filter(Boolean).join(\", \") : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "8323cb36-a524-4c2a-95b5-38efafdd3bda",
+              "name": "year",
+              "value": "={{ $json.publication_year || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "5fc420cb-6120-4f31-a58d-9becf25a2a61",
+              "name": "journal",
+              "value": "={{ $json.primary_location?.source?.display_name || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "ad0d82f6-4284-4a21-97a3-3589cdac9708",
+              "name": "link",
+              "value": "={{ $json.primary_location?.landing_page_url || $json.best_oa_location?.landing_page_url || $json.doi || $json.id || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "1d22331e-7850-41a5-9239-c6c73eb0cb8b",
+              "name": "abstract",
+              "value": "={{ (() => {\n  const index = $json.abstract_inverted_index;\n\n  if (!index || typeof index !== \"object\") {\n    return \"\";\n  }\n\n  const words = [];\n\n  for (const [word, positions] of Object.entries(index)) {\n    if (!Array.isArray(positions)) continue;\n\n    for (const position of positions) {\n      words[position] = word;\n    }\n  }\n\n  return words\n    .map(word => word || \"\")\n    .join(\" \")\n    .replace(/\\s+/g, \" \")\n    .trim();\n})() }}",
+              "type": "string"
+            },
+            {
+              "id": "ae63e6c4-f780-4674-8b11-dabc6071a588",
+              "name": "doi",
+              "value": "={{ String($json.doi || \"\").replace(/^https?:\\/\\/(?:dx\\.)?doi\\.org\\//i, \"\").trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "1b262385-1ea2-4894-878c-4438cb0bc0bb",
+              "name": "keywords",
+              "value": "={{ (() => {\n  if (Array.isArray($json.keywords) && $json.keywords.length > 0) {\n    return $json.keywords\n      .slice(0, 10)\n      .map(k => k.display_name || \"\")\n      .filter(Boolean)\n      .join(\", \");\n  }\n\n  if (Array.isArray($json.concepts)) {\n    return $json.concepts\n      .slice(0, 10)\n      .map(c => c.display_name || \"\")\n      .filter(Boolean)\n      .join(\", \");\n  }\n\n  return \"\";\n})() }}",
+              "type": "string"
+            },
+            {
+              "id": "2005459f-25aa-442b-9f23-b8a0d8c55202",
+              "name": "key",
+              "value": "={{ (() => {\n  const doi = String($json.doi || \"\")\n    .replace(/^https?:\\/\\/(?:dx\\.)?doi\\.org\\//i, \"\")\n    .trim()\n    .toLowerCase();\n\n  if (doi) {\n    return `doi:${doi}`;\n  }\n\n  const title = String($json.title || $json.display_name || \"\")\n    .toLowerCase()\n    .normalize(\"NFKD\")\n    .replace(/[^\\p{L}\\p{N}]+/gu, \" \")\n    .replace(/\\s+/g, \" \")\n    .trim();\n\n  return title ? `ty:${title}` : \"\";\n})() }}",
+              "type": "string"
+            },
+            {
+              "id": "5ca53fe7-cfaa-4937-8f65-c7effae56796",
+              "name": "publisher_raw",
+              "value": "={{ \n  $json.primary_location?.source?.host_organization_name\n  || $json.primary_location?.source?.host_organization_lineage_names?.[0]\n  || \"\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "4a37f063-873a-4541-ab7b-ff1d560625c1",
+              "name": "publication_type",
+              "value": "={{ $json.type || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "6cbacaa1-5b12-40e3-865a-5c5a45b7f611",
+              "name": "citation_count",
+              "value": "={{ Number($json.cited_by_count || 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1888,
+        304
+      ],
+      "id": "a72af8fa-ce40-46bb-9aaf-e609060cd1bb",
+      "name": "Edit Fields (Normalize: OpenAlex)"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        304
+      ],
+      "id": "67979b09-d9fb-4128-9721-cdfbba738a58",
+      "name": "Item Lists (Split organic_results)-openalex"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfunction normDoi(doi) {\n  let s = String(doi ?? '').trim().toLowerCase();\n  // remove doi prefix & url forms\n  s = s.replace(/^doi:\\s*/i, '');\n  s = s.replace(/^https?:\\/\\/(dx\\.)?doi\\.org\\//i, '');\n  return s;\n}\n\nfunction normText(t) {\n  return String(t ?? '')\n    .trim()\n    .toLowerCase()\n    .replace(/\\s+/g, ' ');\n}\n\nfor (const it of items) {\n  const title = normText(it.json.title);\n  const year  = String(it.json.year || '').trim();\n  const doi   = normDoi(it.json.doi);\n\n  it.json.key = doi\n    ? `doi:${doi}`\n    : `ty:${title}|${year || 'na'}`;\n}\n\nreturn items;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1440,
+        208
+      ],
+      "id": "a221e2f7-2b17-47e4-888c-ef38e89fc0e6",
+      "name": "Function (make key)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst out = [];\n\nfor (const it of $input.all()) {\n  const k = it.json.key;\n  if (!seen.has(k)) {\n    seen.add(k);\n    out.push(it);\n  }\n}\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1216,
+        208
+      ],
+      "id": "e6e49faa-4185-45c8-8e3f-733ae57bf391",
+      "name": "Remove Duplicate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfunction canonKey(v) {\n  let s = String(v ?? '').trim().toLowerCase();\n\n  // normalize DOI formats\n  // examples handled:\n  // - doi:10.xxxx/yyy\n  // - https://doi.org/10.xxxx/yyy\n  // - http://dx.doi.org/10.xxxx/yyy\n  s = s.replace(/^doi:\\s*/i, '');\n  s = s.replace(/^https?:\\/\\/(dx\\.)?doi\\.org\\//i, '');\n\n  // normalize whitespace\n  s = s.replace(/\\s+/g, ' ').trim();\n\n  return s;\n}\n\n// แยกของเก่าจากชีต vs ของใหม่จากการค้นหา\nconst oldItems = items.filter(i => i.json.from_sheet === true);\nconst newItems = items.filter(i => i.json.from_sheet !== true);\n\n// สร้าง set ของ key ที่มีอยู่แล้ว (จากชีต)\nconst existing = new Set(\n  oldItems.map(i => canonKey(i.json.key)).filter(Boolean)\n);\n\n// คืนเฉพาะรายการใหม่ที่ยังไม่มี key ในชีต\nreturn newItems.filter(i => {\n  const k = canonKey(i.json.key);\n  return k && !existing.has(k);\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        208
+      ],
+      "id": "0fe82489-2cad-49ef-8382-ccc219c19c06",
+      "name": "Filter new only"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -544,
+        208
+      ],
+      "id": "36c7fd50-51f5-460f-b69c-065b24c1d1d7",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.source }}",
+                    "rightValue": "=crossref",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6759bc3a-bbe0-4700-8b89-c4aebe01c41b"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Crossref"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "00ff72f0-b4b6-4a2f-9f4a-707d5d994d6e",
+                    "leftValue": "={{$json.source}}",
+                    "rightValue": "openalex",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OpenAlex"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        128,
+        304
+      ],
+      "id": "bf170a94-b0ad-451c-a592-17252aff9d48",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1238719652,
+          "mode": "list",
+          "cachedResultName": "OpenAlex",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=1238719652"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source || \"\" }}",
+            "title": "={{ $json.title || \"\" }}",
+            "authors": "={{ $json.authors || \"\" }}",
+            "year": "={{ $json.year || \"\" }}",
+            "journal": "={{ $json.journal || \"\" }}",
+            "abstract": "={{ $json.abstract || \"\" }}",
+            "link": "={{ $json.link || \"\" }}",
+            "doi": "={{ $json.doi || \"\" }}",
+            "keywords": "={{ $json.keywords || \"\" }}",
+            "key": "={{ $json.key || \"\" }}",
+            "quartile": "={{ $json.quartile || \"\" }}",
+            "publisher": "={{ $json.publisher || \"Unknown\" }}",
+            "publisher_raw": "={{ $json.publisher_raw || \"\" }}",
+            "publication_type": "={{ $json.publication_type || \"\" }}",
+            "citation_count": "={{ Number($json.citation_count ?? 0) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "authors",
+              "displayName": "authors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "year",
+              "displayName": "year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "journal",
+              "displayName": "journal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "doi",
+              "displayName": "doi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "abstract",
+              "displayName": "abstract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "citation_count",
+              "displayName": "citation_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publication_type",
+              "displayName": "publication_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publisher_raw",
+              "displayName": "publisher_raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publisher",
+              "displayName": "publisher",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quartile",
+              "displayName": "quartile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        400
+      ],
+      "id": "5049429b-abda-4e52-b7b4-3d912b7b18ea",
+      "name": "Append row (OpenAlex)",
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ======================================================\n// Detect Publisher\n// รองรับ OpenAlex, Crossref และ Semantic Scholar\n// ตรวจจาก Publisher Raw, Journal, URL และ DOI Prefix\n// Mode: Run Once for Each Item\n// ======================================================\n\nconst data = $json;\n\n// ------------------------------------------------------\n// ฟังก์ชันเลือกค่าตัวแรกที่ไม่ว่าง\n// ------------------------------------------------------\nfunction firstNonEmpty(...values) {\n  for (const value of values) {\n    if (value === null || value === undefined) {\n      continue;\n    }\n\n    const text = String(value).trim();\n\n    if (text !== \"\") {\n      return text;\n    }\n  }\n\n  return \"\";\n}\n\n// ------------------------------------------------------\n// ฟังก์ชันแปลงข้อมูล URL หรือ Array ให้เป็นข้อความ\n// ------------------------------------------------------\nfunction valueToText(value) {\n  if (value === null || value === undefined) {\n    return \"\";\n  }\n\n  if (Array.isArray(value)) {\n    return value\n      .map(item => valueToText(item))\n      .filter(Boolean)\n      .join(\" \");\n  }\n\n  if (typeof value === \"object\") {\n    return firstNonEmpty(\n      value.URL,\n      value.url,\n      value.href,\n      value.display_name,\n      value.name\n    );\n  }\n\n  return String(value).trim();\n}\n\n// ------------------------------------------------------\n// 1. Publisher Raw\n// ------------------------------------------------------\nconst publisherRaw = firstNonEmpty(\n  data.publisher_raw,\n  data.publisherRaw,\n  data.host_organization_name,\n  data.primary_location?.source?.host_organization_name,\n  data.primary_location?.source?.display_name,\n  data.publisher\n);\n\n// ------------------------------------------------------\n// 2. Journal / Venue\n// ------------------------------------------------------\nconst journal = firstNonEmpty(\n  data.journal,\n  data.venue,\n  data.journal?.name,\n  data.container_title,\n  data[\"container-title\"]?.[0],\n  data.primary_location?.source?.display_name\n);\n\n// ------------------------------------------------------\n// 3. DOI\n// รองรับชื่อฟิลด์จากทุกแหล่งข้อมูล\n// ------------------------------------------------------\nconst doiRaw = firstNonEmpty(\n  data.doi,\n  data.DOI,\n  data.externalIds?.DOI,\n  data.externalIds?.doi,\n  data.ids?.doi,\n  data.primary_location?.id\n);\n\nconst doi = String(doiRaw || \"\")\n  .replace(/^https?:\\/\\/(?:dx\\.)?doi\\.org\\//i, \"\")\n  .replace(/^doi:\\s*/i, \"\")\n  .trim()\n  .toLowerCase();\n\n// ------------------------------------------------------\n// 4. URL\n// ------------------------------------------------------\nconst linkText = [\n  valueToText(data.link),\n  valueToText(data.url),\n  valueToText(data.URL),\n  valueToText(data.openAccessPdf?.url),\n  valueToText(data.primary_location?.landing_page_url),\n  valueToText(data.primary_location?.pdf_url),\n  valueToText(data.resource?.primary?.URL),\n  valueToText(data.links)\n]\n  .filter(Boolean)\n  .join(\" \");\n\n// ------------------------------------------------------\n// รวมข้อมูลทั้งหมดสำหรับตรวจสอบ\n// ------------------------------------------------------\nconst sourceText = [\n  publisherRaw,\n  journal,\n  linkText,\n  doi\n]\n  .filter(Boolean)\n  .join(\" \")\n  .toLowerCase();\n\n// ------------------------------------------------------\n// กฎตรวจสอบ Publisher\n// เรียงจากชื่อที่จำเพาะไปยังชื่อทั่วไป\n// ------------------------------------------------------\nconst publisherRules = [\n  {\n    publisher: \"Elsevier\",\n    patterns: [\n      /elsevier/,\n      /elsevier\\s+bv/,\n      /sciencedirect\\.com/,\n      /ssrn\\.com/,\n      /10\\.1016\\//,\n      /10\\.2139\\//\n    ]\n  },\n  {\n    publisher: \"MDPI\",\n    patterns: [\n      /\\bmdpi\\b/,\n      /mdpi\\s+ag/,\n      /multidisciplinary digital publishing institute/,\n      /mdpi\\.com/,\n      /10\\.3390\\//\n    ]\n  },\n  {\n    publisher: \"IEEE\",\n    patterns: [\n      /\\bieee\\b/,\n      /institute of electrical and electronics engineers/,\n      /ieeexplore\\.ieee\\.org/,\n      /10\\.1109\\//\n    ]\n  },\n  {\n    publisher: \"ACM\",\n    patterns: [\n      /association for computing machinery/,\n      /\\bacm\\b/,\n      /dl\\.acm\\.org/,\n      /10\\.1145\\//\n    ]\n  },\n  {\n    publisher: \"PeerJ\",\n    patterns: [\n      /\\bpeerj\\b/,\n      /peerj,\\s*inc/,\n      /peerj\\.com/,\n      /10\\.7717\\//\n    ]\n  },\n  {\n    publisher: \"Springer Nature\",\n    patterns: [\n      /springer nature/,\n      /springer science/,\n      /springerlink/,\n      /\\bspringer\\b/,\n      /nature portfolio/,\n      /nature publishing group/,\n      /biomed central/,\n      /\\bbmc\\b/,\n      /link\\.springer\\.com/,\n      /nature\\.com/,\n      /10\\.1007\\//,\n      /10\\.1038\\//,\n      /10\\.1186\\//\n    ]\n  },\n  {\n    publisher: \"Wiley\",\n    patterns: [\n      /\\bwiley\\b/,\n      /john wiley/,\n      /wiley-blackwell/,\n      /onlinelibrary\\.wiley\\.com/,\n      /10\\.1002\\//,\n      /10\\.1111\\//\n    ]\n  },\n  {\n    publisher: \"Taylor & Francis\",\n    patterns: [\n      /taylor\\s*(?:&|and)\\s*francis/,\n      /routledge/,\n      /tandfonline\\.com/,\n      /10\\.1080\\//\n    ]\n  },\n  {\n    publisher: \"SAGE\",\n    patterns: [\n      /\\bsage\\b/,\n      /sage publishing/,\n      /sage publications/,\n      /sagepub\\.com/,\n      /10\\.1177\\//\n    ]\n  },\n  {\n    publisher: \"Frontiers\",\n    patterns: [\n      /\\bfrontiers\\b/,\n      /frontiersin\\.org/,\n      /10\\.3389\\//\n    ]\n  },\n  {\n    publisher: \"Oxford University Press\",\n    patterns: [\n      /oxford university press/,\n      /academic\\.oup\\.com/,\n      /10\\.1093\\//\n    ]\n  },\n  {\n    publisher: \"Cambridge University Press\",\n    patterns: [\n      /cambridge university press/,\n      /cambridge\\.org/,\n      /10\\.1017\\//\n    ]\n  },\n  {\n    publisher: \"PLOS\",\n    patterns: [\n      /\\bplos\\b/,\n      /public library of science/,\n      /plos\\.org/,\n      /10\\.1371\\//\n    ]\n  },\n  {\n    publisher: \"Emerald\",\n    patterns: [\n      /\\bemerald\\b/,\n      /emerald publishing/,\n      /emerald\\.com/,\n      /10\\.1108\\//\n    ]\n  },\n  {\n    publisher: \"IGI Global\",\n    patterns: [\n      /igi global/,\n      /igi-global\\.com/,\n      /10\\.4018\\//\n    ]\n  },\n  {\n    publisher: \"Hindawi\",\n    patterns: [\n      /\\bhindawi\\b/,\n      /hindawi publishing corporation/,\n      /hindawi\\.com/,\n      /10\\.1155\\//\n    ]\n  },\n  {\n    publisher: \"IOP Publishing\",\n    patterns: [\n      /iop publishing/,\n      /iopscience\\.iop\\.org/,\n      /10\\.1088\\//\n    ]\n  },\n  {\n    publisher: \"American Chemical Society\",\n    patterns: [\n      /american chemical society/,\n      /acs publications/,\n      /pubs\\.acs\\.org/,\n      /10\\.1021\\//\n    ]\n  },\n  {\n    publisher: \"Royal Society of Chemistry\",\n    patterns: [\n      /royal society of chemistry/,\n      /rsc publishing/,\n      /pubs\\.rsc\\.org/,\n      /10\\.1039\\//\n    ]\n  },\n  {\n    publisher: \"American Physical Society\",\n    patterns: [\n      /american physical society/,\n      /aps physics/,\n      /journals\\.aps\\.org/,\n      /10\\.1103\\//\n    ]\n  },\n  {\n    publisher: \"AIP Publishing\",\n    patterns: [\n      /aip publishing/,\n      /pubs\\.aip\\.org/,\n      /10\\.1063\\//\n    ]\n  },\n  {\n    publisher: \"BMJ\",\n    patterns: [\n      /\\bbmj\\b/,\n      /bmj publishing/,\n      /bmj\\.com/,\n      /10\\.1136\\//\n    ]\n  },\n  {\n    publisher: \"De Gruyter\",\n    patterns: [\n      /de gruyter/,\n      /degruyter\\.com/,\n      /10\\.1515\\//\n    ]\n  },\n  {\n    publisher: \"JMIR Publications\",\n    patterns: [\n      /jmir publications/,\n      /jmir\\.org/,\n      /10\\.2196\\//\n    ]\n  },\n  {\n    publisher: \"Preprints.org\",\n    patterns: [\n      /preprints\\.org/,\n      /10\\.20944\\//\n    ]\n  },\n  {\n    publisher: \"arXiv\",\n    patterns: [\n      /\\barxiv\\b/,\n      /arxiv\\.org/,\n      /10\\.48550\\/arxiv/\n    ]\n  }\n];\n\n// ------------------------------------------------------\n// ตรวจสอบ Publisher ตามกฎ\n// ------------------------------------------------------\nlet publisher = \"\";\n\nfor (const rule of publisherRules) {\n  const matched = rule.patterns.some(pattern =>\n    pattern.test(sourceText)\n  );\n\n  if (matched) {\n    publisher = rule.publisher;\n    break;\n  }\n}\n\n// ------------------------------------------------------\n// ถ้าตรวจไม่พบ ให้ใช้ Publisher Raw\n// ------------------------------------------------------\nif (!publisher) {\n  publisher = publisherRaw || \"Unknown\";\n}\n\n// ------------------------------------------------------\n// ส่งข้อมูลออก\n// ------------------------------------------------------\nreturn {\n  json: {\n    ...data,\n\n    // เก็บค่าดิบจากฐานข้อมูลต้นทาง\n    publisher_raw: publisherRaw,\n\n    // ชื่อ Publisher ที่จัดมาตรฐานแล้ว\n    publisher\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        208
+      ],
+      "id": "72c14dce-c514-4e15-8549-35700fc48aa8",
+      "name": "Detect Publisher"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 781096989,
+          "mode": "list",
+          "cachedResultName": "Analysis_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=781096989"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source }}",
+            "title": "={{ $json.title }}",
+            "authors": "={{ $json.authors }}",
+            "year": "={{ $json.year }}",
+            "journal": "={{ $json.journal }}",
+            "link": "={{ $json.link }}",
+            "doi": "={{ $json.doi }}",
+            "key": "={{ $json.key }}",
+            "publisher": "={{ $json.publisher || \"Unknown\" }}",
+            "publisher_raw": "={{ $json.publisher_raw || \"\" }}",
+            "publication_type": "={{ $json.publication_type || \"\" }}",
+            "quartile": "={{ \"\" }}",
+            "abstract": "={{ $json.abstract || \"\" }}",
+            "keywords": "={{ $json.keywords || \"\" }}",
+            "citation_count": "={{ Number($json.citation_count || 0) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "authors",
+              "displayName": "authors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "year",
+              "displayName": "year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "journal",
+              "displayName": "journal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "doi",
+              "displayName": "doi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "abstract",
+              "displayName": "abstract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "citation_count",
+              "displayName": "citation_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publication_type",
+              "displayName": "publication_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publisher_raw",
+              "displayName": "publisher_raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publisher",
+              "displayName": "publisher",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quartile",
+              "displayName": "quartile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        128,
+        16
+      ],
+      "id": "614af189-4f83-4ceb-8ab8-80ce2b003bf2",
+      "name": "Append row Analysis_Master",
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 781096989,
+          "mode": "list",
+          "cachedResultName": "Analysis_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=781096989"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -992,
+        288
+      ],
+      "id": "c9b30b72-ba5a-410b-a48f-1537382c2daf",
+      "name": "Get row(s) in Analysis_Master",
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "157baf24-dec6-45f8-a8a9-2b9ba3c10483",
+              "name": "from_sheet",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -768,
+        288
+      ],
+      "id": "9c2b2f47-96ea-4d05-875d-18ed7641222f",
+      "name": "Mark as from_sheet"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA",
+          "mode": "list",
+          "cachedResultName": "ฟอร์มรับคำสืบค้นงานวิจัย (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 149865736,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA/edit#gid=149865736"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "processed": "={{ true }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ชื่อ-นามสกุล",
+              "displayName": "ชื่อ-นามสกุล",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "อีเมล์",
+              "displayName": "อีเมล์",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "โครงการวิจัย",
+              "displayName": "โครงการวิจัย",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "คำค้นงานวิจัย (ระบุคำค้นงานวิจัยทีละประโยค หลีกเลี่ยงการใช้คำย่อ ตัวอย่างคำค้น เช่น Internet of Things)",
+              "displayName": "คำค้นงานวิจัย (ระบุคำค้นงานวิจัยทีละประโยค หลีกเลี่ยงการใช้คำย่อ ตัวอย่างคำค้น เช่น Internet of Things)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ระบุช่วงปีที่ต้องการ ",
+              "displayName": "ระบุช่วงปีที่ต้องการ ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ประเภทงานวิจัย ",
+              "displayName": "ประเภทงานวิจัย ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ระดับผลลัพธ์ที่ต้องการ ",
+              "displayName": "ระดับผลลัพธ์ที่ต้องการ ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "จำนวนงานวิจัยที่ต้องการ",
+              "displayName": "จำนวนงานวิจัยที่ต้องการ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "ยินยอมให้ระบบประมวลผลข้อมูลเพื่อการศึกษา ",
+              "displayName": "ยินยอมให้ระบบประมวลผลข้อมูลเพื่อการศึกษา ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "หมายเหตุเพิ่มเติม (ถ้ามี)",
+              "displayName": "หมายเหตุเพิ่มเติม (ถ้ามี)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "processed",
+              "displayName": "processed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2336,
+        -80
+      ],
+      "id": "6831b97a-3268-4da4-a232-8904cf48edb8",
+      "name": "Update row in sheet-Form Responses",
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7d60c1b-e762-4e54-be45-af6d5755a433",
+              "name": "row_number",
+              "value": "={{ $json.row_number }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2560,
+        -80
+      ],
+      "id": "739158e2-4fd4-4f86-bc86-6612ca98f539",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA",
+          "mode": "list",
+          "cachedResultName": "ฟอร์มรับคำสืบค้นงานวิจัย (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 149865736,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA/edit#gid=149865736"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3008,
+        112
+      ],
+      "id": "ba1d80a9-a8bd-4d92-b339-97e366b18906",
+      "name": "Get row(s) in sheet (Form Responses 1)",
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "research-keywords/submit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9488c25c-7f57-4a8b-b30f-5df4038b66af",
+      "name": "Webhook (Form Submit)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -3680,
+        208
+      ],
+      "webhookId": "6ae1a937-0a2e-47ed-b2e4-1c4e227cfcbc"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "fe991a6b-897e-402e-a1cf-09b3a71f8f6f",
+              "leftValue": "={{$json[\"query\"][\"key\"]}}",
+              "rightValue": "MySecret1234",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c4684837-7912-4828-a334-2e86655256c7",
+      "name": "IF: Check Secret Key",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -3232,
+        208
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "7c4db518-ab48-4f32-82ed-b16075d70d0f",
+      "name": "Respond 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        -3008,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.crossref.org/works",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query.bibliographic",
+              "value": "={{ $json.crossref_query || $json.query || \"\" }}"
+            },
+            {
+              "name": "rows",
+              "value": "10"
+            },
+            {
+              "name": "filter",
+              "value": "={{\n(() => {\n  const selectedPeriod = String(\n    $json[\"ช่วงปีที่ต้องการ\"] || \"5 ปีล่าสุด\"\n  );\n\n  const match = selectedPeriod.match(/\\d+/);\n  const numberOfYears = match ? Number(match[0]) : 5;\n\n  const now = new Date();\n  const currentYear = now.getFullYear();\n  const startYear = currentYear - numberOfYears + 1;\n  const today = now.toISOString().slice(0, 10);\n\n  return [\n    `from-pub-date:${startYear}-01-01`,\n    `until-pub-date:${today}`,\n    `type:journal-article`,\n    `has-abstract:true`\n  ].join(\",\");\n})()\n}}"
+            },
+            {
+              "name": "mailto",
+              "value": "sompoch.t@msu.ac.th"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2336,
+        112
+      ],
+      "id": "2b060268-52a1-4ae5-bbcb-78b85e475b46",
+      "name": "Crossref HTTP Request"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        112
+      ],
+      "id": "f0b76920-3f3d-4406-807e-2d037bd45720",
+      "name": "Item Lists (Split items)-Crossref"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5f54975f-ad64-43c5-9cf3-b0ddcc98af15",
+              "name": "source",
+              "value": "crossref",
+              "type": "string"
+            },
+            {
+              "id": "5e97bce8-e131-43ea-be9f-2cc36c138fde",
+              "name": "title",
+              "value": "={{ Array.isArray($json.title) ? ($json.title[0] || \"\") : ($json.title || \"\") }}",
+              "type": "string"
+            },
+            {
+              "id": "df7e078d-a594-4b91-a8c7-7e376b60084d",
+              "name": "authors",
+              "value": "={{\n  Array.isArray($json.author)\n    ? $json.author\n        .map(a => [a.given, a.family].filter(Boolean).join(\" \"))\n        .filter(Boolean)\n        .join(\", \")\n    : \"\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "8323cb36-a524-4c2a-95b5-38efafdd3bda",
+              "name": "year",
+              "value": "={{\n  $json.published?.[\"date-parts\"]?.[0]?.[0]\n  || $json.issued?.[\"date-parts\"]?.[0]?.[0]\n  || $json[\"published-online\"]?.[\"date-parts\"]?.[0]?.[0]\n  || $json[\"published-print\"]?.[\"date-parts\"]?.[0]?.[0]\n  || \"\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "5fc420cb-6120-4f31-a58d-9becf25a2a61",
+              "name": "journal",
+              "value": "={{\n  Array.isArray($json[\"container-title\"])\n    ? ($json[\"container-title\"][0] || \"\")\n    : ($json[\"container-title\"] || \"\")\n}}",
+              "type": "string"
+            },
+            {
+              "id": "ad0d82f6-4284-4a21-97a3-3589cdac9708",
+              "name": "doi",
+              "value": "={{\n  String($json.DOI || \"\")\n    .replace(/^https?:\\/\\/doi\\.org\\//i, \"\")\n    .trim()\n    .toLowerCase()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "1d22331e-7850-41a5-9239-c6c73eb0cb8b",
+              "name": "link",
+              "value": "={{\n  $json.URL\n  || ($json.DOI ? \"https://doi.org/\" + $json.DOI : \"\")\n}}",
+              "type": "string"
+            },
+            {
+              "id": "ae63e6c4-f780-4674-8b11-dabc6071a588",
+              "name": "abstract",
+              "value": "={{\n  (() => {\n    const text = String($json.abstract || \"\");\n\n    return text\n      .replace(/<[^>]+>/g, \" \")\n      .replace(/&nbsp;/gi, \" \")\n      .replace(/&amp;/gi, \"&\")\n      .replace(/&lt;/gi, \"<\")\n      .replace(/&gt;/gi, \">\")\n      .replace(/&quot;/gi, '\"')\n      .replace(/&#39;/gi, \"'\")\n      .replace(/\\s+/g, \" \")\n      .replace(/^\\s*abstract\\s*/i, \"\")\n      .trim();\n  })()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "1b262385-1ea2-4894-878c-4438cb0bc0bb",
+              "name": "keywords",
+              "value": "={{\n  Array.isArray($json.subject)\n    ? $json.subject.filter(Boolean).join(\", \")\n    : \"\"\n}}",
+              "type": "string"
+            },
+            {
+              "id": "1747c02a-1560-46a0-942c-7b01fb7e183b",
+              "name": "citation_count",
+              "value": "={{ Number($json[\"is-referenced-by-count\"] ?? 0) }}",
+              "type": "number"
+            },
+            {
+              "id": "6d88a570-cd62-4ea3-aeb1-16fdc5965672",
+              "name": "publication_type",
+              "value": "={{\n(() => {\n  const type = String($json.type || \"\").trim().toLowerCase();\n\n  const typeMap = {\n    \"journal-article\": \"article\",\n    \"proceedings-article\": \"conference-paper\",\n    \"posted-content\": \"preprint\",\n    \"book-chapter\": \"book-chapter\",\n    \"book-section\": \"book-chapter\",\n    \"book\": \"book\",\n    \"monograph\": \"book\",\n    \"edited-book\": \"book\",\n    \"reference-book\": \"book\",\n    \"dissertation\": \"dissertation\",\n    \"report\": \"report\",\n    \"dataset\": \"dataset\",\n    \"peer-review\": \"peer-review\",\n    \"standard\": \"standard\"\n  };\n\n  return typeMap[type] || type || \"unknown\";\n})()\n}}",
+              "type": "string"
+            },
+            {
+              "id": "1686c289-6523-4997-b4bd-7bfc288b0ba7",
+              "name": "publisher_raw",
+              "value": "={{ $json.publisher || \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "50bc2bd6-c69b-488e-8c68-8cb0175c2887",
+              "name": "publisher",
+              "value": "={{ $json.publisher || \"Unknown\" }}",
+              "type": "string"
+            },
+            {
+              "id": "21ae823f-2aa8-4103-b427-72fe5e7b23be",
+              "name": "quartile",
+              "value": "={{ \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "66e552d5-4b37-4225-b2aa-0e75d8b7aa36",
+              "name": "key",
+              "value": "={{   $json.DOI     ? \"doi:\" + String($json.DOI)         .replace(/^https?:\\/\\/doi\\.org\\//i, \"\")         .trim()         .toLowerCase()     : \"\" }}",
+              "type": "string"
+            },
+            {
+              "id": "bae4a614-ab59-46ec-b40a-0bcfc865132c",
+              "name": "ai_status",
+              "value": "pending",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1888,
+        112
+      ],
+      "id": "6c6dd0d3-9776-4ffd-ae04-9694c2d925c1",
+      "name": "Edit Fields (Normalize: Crossref)"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 138472455,
+          "mode": "list",
+          "cachedResultName": "Crossref",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=138472455"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "source": "={{ $json.source }}",
+            "title": "={{ $json.title }}",
+            "authors": "={{ $json.authors }}",
+            "year": "={{ $json.year }}",
+            "abstract": "={{ $json.abstract }}",
+            "link": "={{ $json.link }}",
+            "doi": "={{ $json.doi }}",
+            "keywords": "={{ $json.keywords }}",
+            "key": "={{ $json.key }}",
+            "journal": "={{ $json.journal }}",
+            "citation_count": "={{ Number($json.citation_count ?? 0) }}",
+            "publication_type": "={{ $json.publication_type || \"\" }}",
+            "publisher_raw": "={{ $json.publisher_raw || \"\" }}",
+            "publisher": "={{ $json.publisher || \"Unknown\" }}",
+            "quartile": "={{ $json.quartile || \"\" }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "authors",
+              "displayName": "authors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "year",
+              "displayName": "year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "journal",
+              "displayName": "journal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "doi",
+              "displayName": "doi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "abstract",
+              "displayName": "abstract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "citation_count",
+              "displayName": "citation_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publication_type",
+              "displayName": "publication_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publisher_raw",
+              "displayName": "publisher_raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publisher",
+              "displayName": "publisher",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quartile",
+              "displayName": "quartile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        208
+      ],
+      "id": "26311ee4-493b-433e-96b4-05a1c7b1175a",
+      "name": "Append row (Crossref)",
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ======================================================\n// Set Execution Start — WF06\n// Mode: Run Once for All Items\n// ======================================================\n\nconst items = $input.all();\n\nreturn items.map(item => ({\n  json: {\n    ...item.json,\n\n    workflow: 'WF06 – Scholarly Paper Retrieval',\n    start_ms: Date.now(),\n    started_at: new Date().toISOString()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3456,
+        208
+      ],
+      "id": "f3254b1d-26a2-4694-9733-759c875bae00",
+      "name": "Set Execution Start",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// ======================================================\n// Build Completion Summary — WF06\n// Mode: Run Once for All Items\n// Input: Get Current Analysis_Master Count\n// ======================================================\n\n// ------------------------------------------------------\n// 1. จำนวนปัจจุบันใน Analysis_Master\n// ------------------------------------------------------\nconst currentMasterItems = $input.all();\nconst analysisMasterTotal = currentMasterItems.length;\n\n// ------------------------------------------------------\n// 2. Paper ใหม่ที่ Append ใน execution นี้\n// ------------------------------------------------------\nconst newItems =\n  $('Append row Analysis_Master').all();\n\nconst newAdded = newItems.length;\n\n// จำนวนเดิมก่อน execution นี้\nconst existingBefore = Math.max(\n  0,\n  analysisMasterTotal - newAdded\n);\n\n// ------------------------------------------------------\n// 3. นับ Paper ใหม่ตาม source\n// ------------------------------------------------------\nlet crossrefCount = 0;\nlet openalexCount = 0;\nlet semanticScholarCount = 0;\nlet unknownSourceCount = 0;\n\nfor (const item of newItems) {\n\n  const source = String(\n    item.json?.source ?? ''\n  )\n    .trim()\n    .toLowerCase()\n    .replace(/[\\s_-]/g, '');\n\n  if (source === 'crossref') {\n    crossrefCount++;\n\n  } else if (source === 'openalex') {\n    openalexCount++;\n\n  } else if (source === 'semanticscholar') {\n    semanticScholarCount++;\n\n  } else {\n    unknownSourceCount++;\n  }\n}\n\n// จำนวน Paper ใหม่ทั้งหมดหลัง Filter/Deduplicate\nconst totalRetrieved =\n  crossrefCount +\n  openalexCount +\n  semanticScholarCount +\n  unknownSourceCount;\n\n// ------------------------------------------------------\n// 4. อ่านเวลาเริ่มต้น\n// ------------------------------------------------------\nconst startData =\n  $('Set Execution Start').first().json || {};\n\nlet startMs = Number(\n  startData.start_ms ??\n  startData.started_ms ??\n  startData.start_time_ms ??\n  0\n);\n\nif (!startMs) {\n\n  const startString =\n    startData.started_at ??\n    startData.start_time ??\n    startData.execution_start ??\n    '';\n\n  const parsed = Date.parse(startString);\n\n  if (!Number.isNaN(parsed)) {\n    startMs = parsed;\n  }\n}\n\n// ------------------------------------------------------\n// 5. Duration\n// ------------------------------------------------------\nconst finishedMs = Date.now();\n\nconst durationMs =\n  startMs > 0\n    ? Math.max(0, finishedMs - startMs)\n    : 0;\n\nconst durationSeconds =\n  Math.round(durationMs / 1000);\n\nconst minutes =\n  Math.floor(durationSeconds / 60);\n\nconst seconds =\n  durationSeconds % 60;\n\nconst durationText =\n  minutes > 0\n    ? `${minutes} นาที ${seconds} วินาที`\n    : `${seconds} วินาที`;\n\n// ------------------------------------------------------\n// 6. Format เวลา Bangkok\n// ------------------------------------------------------\nfunction formatBangkokTime(timestamp) {\n\n  if (!timestamp) {\n    return '-';\n  }\n\n  return new Date(timestamp).toLocaleString(\n    'th-TH-u-ca-gregory',\n    {\n      timeZone: 'Asia/Bangkok',\n      year: 'numeric',\n      month: '2-digit',\n      day: '2-digit',\n      hour: '2-digit',\n      minute: '2-digit',\n      second: '2-digit',\n      hour12: false\n    }\n  );\n}\n\nconst startedAt =\n  startMs > 0\n    ? formatBangkokTime(startMs)\n    : '-';\n\nconst finishedAt =\n  formatBangkokTime(finishedMs);\n\n// ------------------------------------------------------\n// 7. Execution ID\n// ------------------------------------------------------\nconst executionId =\n  String($execution.id ?? '-');\n\n// ------------------------------------------------------\n// 8. URL Analysis_Master\n// ------------------------------------------------------\nconst analysisMasterUrl =\n  String(\n    startData.analysis_master_url ?? ''\n  ).trim();\n\n// ------------------------------------------------------\n// 9. Output → LINE Flex\n// ------------------------------------------------------\nreturn [\n  {\n    json: {\n\n      workflow:\n        'WF06 – Scholarly Paper Retrieval',\n\n      crossref_count:\n        crossrefCount,\n\n      openalex_count:\n        openalexCount,\n\n      semantic_scholar_count:\n        semanticScholarCount,\n\n      unknown_source_count:\n        unknownSourceCount,\n\n      total_retrieved:\n        totalRetrieved,\n\n      existing_before:\n        existingBefore,\n\n      new_added:\n        newAdded,\n\n      analysis_master_total:\n        analysisMasterTotal,\n\n      duration_ms:\n        durationMs,\n\n      duration_seconds:\n        durationSeconds,\n\n      duration_minutes:\n        Number(\n          (durationSeconds / 60).toFixed(2)\n        ),\n\n      duration_text:\n        durationText,\n\n      started_at:\n        startedAt,\n\n      finished_at:\n        finishedAt,\n\n      execution_id:\n        executionId,\n\n      analysis_master_url:\n        analysisMasterUrl\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        16
+      ],
+      "id": "241231c9-7178-4497-8b1a-b2cc1bffcd57",
+      "name": "Build Completion Summary"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "toId",
+              "value": "=Ue36b6e7d9fc0906c025309812a4a6f07"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.line_message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set (LINE Target)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        16
+      ],
+      "id": "e7c831f1-ca53-4aa6-b5f7-3c4fccb221ab",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ======================================================\n// Code | Build LINE Flex — WF06 Scholarly Paper Retrieval\n// Mode: Run Once for Each Item\n// Input: Build Completion Summary\n// ======================================================\n\nconst data = $json;\n\n// ------------------------------------------------------\n// 1. อ่านข้อมูลสรุปผล WF06\n// ------------------------------------------------------\nconst crossrefCount = Number(\n  data.crossref_count ?? 0\n);\n\nconst openalexCount = Number(\n  data.openalex_count ?? 0\n);\n\nconst semanticScholarCount = Number(\n  data.semantic_scholar_count ?? 0\n);\n\nconst unknownSourceCount = Number(\n  data.unknown_source_count ?? 0\n);\n\nconst totalRetrieved = Number(\n  data.total_retrieved ?? 0\n);\n\nconst existingBefore = Number(\n  data.existing_before ?? 0\n);\n\nconst newAdded = Number(\n  data.new_added ?? 0\n);\n\nconst analysisMasterTotal = Number(\n  data.analysis_master_total ?? 0\n);\n\nconst durationText = String(\n  data.duration_text || '-'\n);\n\nconst startedAt = String(\n  data.started_at || '-'\n);\n\nconst finishedAt = String(\n  data.finished_at || '-'\n);\n\nconst executionId = String(\n  data.execution_id || '-'\n);\n\nconst analysisMasterUrl = String(\n  data.analysis_master_url || ''\n).trim();\n\n// ------------------------------------------------------\n// 2. กำหนดสถานะ\n// ------------------------------------------------------\nlet statusTitle = 'ค้นหาบทความเสร็จสมบูรณ์';\nlet statusIcon = '✅';\n\n// สีน้ำเงิน\nlet headerColor = '#0B57D0';\n\nlet statusDetail =\n  `ผ่านการกรอง ${totalRetrieved} รายการ และเพิ่มใหม่ ${newAdded} เรื่อง`;\n\nif (totalRetrieved === 0) {\n\n  statusTitle = 'ไม่พบบทความใหม่';\n  statusIcon = 'ℹ️';\n  headerColor = '#64748B';\n\n  statusDetail =\n    'ไม่พบรายการใหม่หลังการกรองและตรวจสอบความซ้ำ';\n\n} else if (newAdded === 0) {\n\n  statusTitle = 'ค้นหาเสร็จสมบูรณ์';\n  statusIcon = 'ℹ️';\n  headerColor = '#0284C7';\n\n  statusDetail =\n    `ผ่านการกรอง ${totalRetrieved} รายการ แต่ไม่มีบทความใหม่เพิ่ม`;\n}\n\n// ------------------------------------------------------\n// 3. ฟังก์ชันสร้าง Metric Row\n// ------------------------------------------------------\nfunction metricRow(label, value, color = '#111827') {\n\n  return {\n    type: 'box',\n    layout: 'horizontal',\n    spacing: 'sm',\n\n    contents: [\n      {\n        type: 'text',\n        text: label,\n        size: 'xs',\n        color: '#64748B',\n        flex: 4,\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text: String(value),\n        size: 'xs',\n        color,\n        weight: 'bold',\n        align: 'end',\n        flex: 2,\n        wrap: true\n      }\n    ]\n  };\n}\n\n// ------------------------------------------------------\n// 4. สร้าง LINE Flex Bubble\n// ------------------------------------------------------\nconst bubble = {\n\n  type: 'bubble',\n  size: 'mega',\n\n  // ----------------------------------------------------\n  // HEADER\n  // ----------------------------------------------------\n  header: {\n\n    type: 'box',\n    layout: 'vertical',\n    backgroundColor: headerColor,\n    paddingAll: '16px',\n    spacing: 'xs',\n\n    contents: [\n\n      {\n        type: 'text',\n        text: `${statusIcon} ${statusTitle}`,\n        color: '#FFFFFF',\n        weight: 'bold',\n        size: 'lg',\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text: statusDetail,\n        color: '#EAF2FF',\n        size: 'xs',\n        wrap: true\n      }\n    ]\n  },\n\n  // ----------------------------------------------------\n  // BODY\n  // ----------------------------------------------------\n  body: {\n\n    type: 'box',\n    layout: 'vertical',\n    paddingAll: '16px',\n    spacing: 'sm',\n\n    contents: [\n\n      {\n        type: 'text',\n        text: '🔎 WF06 • Scholarly Paper Retrieval',\n        weight: 'bold',\n        size: 'sm',\n        color: '#111827',\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text: `${newAdded} บทความใหม่`,\n        weight: 'bold',\n        size: 'xl',\n        color: '#0B57D0',\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text:\n          `หลังกรองและตัดรายการซ้ำ ${totalRetrieved} รายการ`,\n        size: 'xs',\n        color: '#64748B',\n        wrap: true\n      },\n\n      {\n        type: 'separator',\n        color: '#E5E7EB',\n        margin: 'sm'\n      },\n\n      // ------------------------------------------------\n      // Source Metrics\n      // ------------------------------------------------\n      {\n        type: 'text',\n        text: 'แหล่งข้อมูล',\n        weight: 'bold',\n        size: 'xs',\n        color: '#374151',\n        wrap: true\n      },\n\n      metricRow(\n        '📘 Crossref',\n        `${crossrefCount} รายการ`,\n        '#0B57D0'\n      ),\n\n      metricRow(\n        '🌐 OpenAlex',\n        `${openalexCount} รายการ`,\n        '#0284C7'\n      ),\n\n      metricRow(\n        '🎓 Semantic Scholar',\n        `${semanticScholarCount} รายการ`,\n        '#0369A1'\n      ),\n\n      ...(unknownSourceCount > 0\n        ? [\n            metricRow(\n              '❓ Unknown Source',\n              `${unknownSourceCount} รายการ`,\n              '#F59E0B'\n            )\n          ]\n        : []),\n\n      {\n        type: 'separator',\n        color: '#E5E7EB',\n        margin: 'sm'\n      },\n\n      // ------------------------------------------------\n      // Analysis_Master Metrics\n      // ------------------------------------------------\n      {\n        type: 'text',\n        text: 'Analysis_Master',\n        weight: 'bold',\n        size: 'xs',\n        color: '#374151',\n        wrap: true\n      },\n\n      metricRow(\n        '📄 เดิม',\n        `${existingBefore} เรื่อง`\n      ),\n\n      metricRow(\n        '➕ เพิ่มใหม่',\n        `${newAdded} เรื่อง`,\n        '#16A34A'\n      ),\n\n      metricRow(\n        '📚 รวมปัจจุบัน',\n        `${analysisMasterTotal} เรื่อง`,\n        '#0B57D0'\n      ),\n\n      {\n        type: 'separator',\n        color: '#E5E7EB',\n        margin: 'sm'\n      },\n\n      // ------------------------------------------------\n      // เวลา\n      // ------------------------------------------------\n      {\n        type: 'box',\n        layout: 'vertical',\n        spacing: 'xs',\n\n        contents: [\n\n          {\n            type: 'text',\n            text: `⏱️ ระยะเวลา: ${durationText}`,\n            size: 'xs',\n            color: '#374151',\n            weight: 'bold',\n            wrap: true\n          },\n\n          {\n            type: 'text',\n            text: `🟢 เริ่ม: ${startedAt}`,\n            size: 'xxs',\n            color: '#6B7280',\n            wrap: true\n          },\n\n          {\n            type: 'text',\n            text: `🏁 เสร็จ: ${finishedAt}`,\n            size: 'xxs',\n            color: '#6B7280',\n            wrap: true\n          }\n        ]\n      },\n\n      {\n        type: 'text',\n        text: `Execution ID: ${executionId}`,\n        size: 'xxs',\n        color: '#9CA3AF',\n        wrap: true,\n        margin: 'xs'\n      },\n\n      {\n        type: 'text',\n        text:\n          `➡️ พร้อมส่งต่อ WF7: ${analysisMasterTotal} เรื่อง`,\n        size: 'xs',\n        color: '#0B57D0',\n        weight: 'bold',\n        wrap: true,\n        margin: 'sm'\n      }\n    ]\n  }\n};\n\n// ------------------------------------------------------\n// 5. ปุ่มเปิด Analysis_Master\n// ------------------------------------------------------\nif (/^https?:\\/\\//i.test(analysisMasterUrl)) {\n\n  bubble.footer = {\n\n    type: 'box',\n    layout: 'vertical',\n    spacing: 'xs',\n    paddingAll: '12px',\n\n    contents: [\n\n      {\n        type: 'button',\n        style: 'primary',\n        height: 'sm',\n        color: '#0B57D0',\n\n        action: {\n          type: 'uri',\n          label: 'เปิด Analysis_Master',\n          uri: analysisMasterUrl,\n\n          altUri: {\n            desktop: analysisMasterUrl\n          }\n        }\n      },\n\n      {\n        type: 'text',\n        text: 'Google Sheets • Analysis_Master',\n        size: 'xxs',\n        color: '#9CA3AF',\n        align: 'center',\n        margin: 'sm'\n      }\n    ]\n  };\n\n  bubble.styles = {\n    ...(bubble.styles || {}),\n\n    footer: {\n      separator: true\n    }\n  };\n}\n\n// ------------------------------------------------------\n// 6. Alt Text\n// ------------------------------------------------------\nconst altText =\n  totalRetrieved > 0\n    ? `${statusIcon} WF06 Retrieval: เพิ่มใหม่ ${newAdded} เรื่อง`\n    : `${statusIcon} WF06 Retrieval: ไม่พบบทความใหม่`;\n\n// ------------------------------------------------------\n// 7. สร้าง Flex Message\n// ------------------------------------------------------\nconst lineMessage = {\n\n  type: 'flex',\n  altText,\n  contents: bubble\n\n};\n\n// ------------------------------------------------------\n// 8. Output\n// ------------------------------------------------------\nreturn {\n\n  json: {\n\n    ...data,\n\n    // สำหรับ LineMessageNode-Flex\n    line_flex_alt_text: altText,\n    line_flex_contents: bubble,\n    line_flex_contents_json:\n      JSON.stringify(bubble),\n\n    // Alias รองรับ Node เดิม\n    alt_text: altText,\n    flex_content_json:\n      JSON.stringify(bubble),\n\n    // Message พร้อมส่ง\n    line_message: lineMessage,\n    message: lineMessage,\n    messages: [lineMessage]\n\n  }\n\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        16
+      ],
+      "id": "7b737dd7-ee3f-40cd-b762-8ae1495b568d",
+      "name": "Code | Build LINE Flex"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 781096989,
+          "mode": "list",
+          "cachedResultName": "Analysis_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=781096989"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        352,
+        16
+      ],
+      "id": "e8069dd2-60bf-4508-b9fe-7aa4f414f08c",
+      "name": "Get Current Analysis_Master Count",
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    to: $json.toId,\n    messages: [\n      {\n        type: \"flex\",\n        altText: $json.line_flex_alt_text,\n        contents:\n          typeof $json.line_flex_contents_json === \"string\"\n            ? JSON.parse($json.line_flex_contents_json)\n            : $json.line_flex_contents_json\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1248,
+        16
+      ],
+      "id": "3972148e-73c8-433c-bb75-139c3195c6de",
+      "name": "HTTP Request — Send LINE Flex",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "sVckxin8yAbxN328",
+          "name": "Header Auth account-LINE Messaging API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAlex": {
+      "main": [
+        [
+          {
+            "node": "Item Lists (Split organic_results)-openalex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Function (make key)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If (processed / ยืนยัน)": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields (สร้าง query + prompt)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields (สร้าง query + prompt)": {
+      "main": [
+        [
+          {
+            "node": "OpenAlex",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Crossref HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields (Normalize: OpenAlex)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Item Lists (Split organic_results)-openalex": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields (Normalize: OpenAlex)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Function (make key)": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in Analysis_Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter new only": {
+      "main": [
+        [
+          {
+            "node": "Detect Publisher",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Filter new only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Append row (Crossref)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append row (OpenAlex)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Publisher": {
+      "main": [
+        [
+          {
+            "node": "Append row Analysis_Master",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row Analysis_Master": {
+      "main": [
+        [
+          {
+            "node": "Get Current Analysis_Master Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Analysis_Master": {
+      "main": [
+        [
+          {
+            "node": "Mark as from_sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark as from_sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet-Form Responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet (Form Responses 1)": {
+      "main": [
+        [
+          {
+            "node": "If (processed / ยืนยัน)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook (Form Submit)": {
+      "main": [
+        [
+          {
+            "node": "Set Execution Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF: Check Secret Key": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet (Form Responses 1)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crossref HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Item Lists (Split items)-Crossref",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Item Lists (Split items)-Crossref": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields (Normalize: Crossref)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields (Normalize: Crossref)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Execution Start": {
+      "main": [
+        [
+          {
+            "node": "IF: Check Secret Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Completion Summary": {
+      "main": [
+        [
+          {
+            "node": "Code | Build LINE Flex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set (LINE Target)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request — Send LINE Flex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code | Build LINE Flex": {
+      "main": [
+        [
+          {
+            "node": "Set (LINE Target)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Current Analysis_Master Count": {
+      "main": [
+        [
+          {
+            "node": "Build Completion Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "57913a45-5939-48fe-ab03-fec829bb0652",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f67c4ff45e6847c7f3306f768954dfbdc3b46082d96661961536c26e812cb4e9"
+  },
+  "nodeGroups": [],
+  "id": "hS6uMJG33VLTIdCn",
+  "tags": []
+}

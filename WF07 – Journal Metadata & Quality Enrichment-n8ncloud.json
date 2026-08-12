@@ -1,0 +1,984 @@
+{
+  "name": "WF07 – Journal Metadata & Quality Enrichment-n8ncloud",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1216,
+        176
+      ],
+      "id": "bdbd1651-a143-4459-8e39-dc691a94dadc",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 781096989,
+          "mode": "list",
+          "cachedResultName": "Analysis_Master",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=781096989"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -576,
+        176
+      ],
+      "id": "73715ac0-25c2-43ea-bb9a-2354f118a7fb",
+      "name": "Get row(s) – Analysis_Master",
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -304,
+        176
+      ],
+      "id": "3210f500-fc16-49e7-8a33-e01bb4d477da",
+      "name": "Loop Over Papers"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "de759990-f501-4b36-8275-40a8ec44651a",
+              "name": "screening_criteria",
+              "value": "=={{\n`You are screening scholarly publications for relevance to the target research topic.\n\nTARGET KEYWORD:\n${$json.target_keyword}\n\nINCLUDE the paper when ALL of the following conditions are satisfied:\n\nIC1. A meaningful abstract is available and provides sufficient information for reliable screening.\n\nIC2. The paper reports original research, such as a proposed method, model, framework, architecture, system, algorithm, prototype, experiment, implementation, dataset evaluation, field study, or empirical study.\n\nIC3. The target keyword, or a semantically equivalent concept, is central to the research problem, proposed method, system, architecture, implementation, experiment, or evaluation.\n\nIC4. The study makes a substantive research contribution related to the target keyword.\n\nIC5. The target topic is part of the actual research contribution rather than merely appearing as background, motivation, an illustrative example, or possible future application.\n\nEXCLUDE the paper when ANY of the following conditions applies:\n\nEC1. The abstract is missing, empty, or insufficient for reliable screening.\n\nEC2. The publication is primarily a review, survey, systematic review, bibliometric study, editorial, commentary, perspective, or purely conceptual discussion.\n\nEC3. The target keyword, or a semantically equivalent concept, appears only as background, motivation, literature context, an illustrative example, or future work.\n\nEC4. The primary research contribution concerns another topic and the target topic has only a peripheral or incidental role.\n\nEC5. There is insufficient evidence in the title, abstract, keywords, or metadata to establish substantive relevance to the target topic.\n\nIMPORTANT SCREENING RULES:\n\n- Do not rely solely on exact keyword matching.\n- Recognize abbreviations, synonyms, closely related terminology, and semantically equivalent concepts.\n- Evaluate semantic relevance rather than simple keyword occurrence.\n- Determine whether the target topic is central to the actual research contribution.\n- Do not infer information that is not supported by the supplied paper data.\n- A paper must not be included merely because the target keyword appears in the title, abstract, or keywords.\n- If substantive relevance cannot be established from the available evidence, classify the paper as Exclude.`\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        192
+      ],
+      "id": "3904fb13-a691-49cd-a0d4-e662fb1a046e",
+      "name": "Set Research Screening Criteria"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.screening_criteria }}\n\nPAPER TO SCREEN\n\nRow Number:\n{{ $json.row_number }}\n\nKey:\n{{ $json.key }}\n\nTitle:\n{{ $json.title }}\n\nAbstract:\n{{ $json.abstract }}\n\nAuthor Keywords:\n{{ $json.keywords }}\n\nPublication Type:\n{{ $json.publication_type }}\n\nYear:\n{{ $json.year }}\n\nJournal:\n{{ $json.journal }}\n\nTARGET RESEARCH TOPIC\n\n{{ $json.target_keyword }}\n\n\nSCREENING TASK\n\nEvaluate this paper strictly according to the screening criteria provided above.\n\nUse ONLY the supplied paper information:\n- title\n- abstract\n- author keywords\n- publication type\n- year\n- journal\n- metadata\n\nDo not use external knowledge.\n\nDo not infer methods, applications, research contributions, findings,\nor relevance that are not supported by the supplied paper data.\n\nEvaluate semantic relevance rather than exact keyword occurrence.\n\nThe presence of the target keyword in the title, abstract, or author keywords\nalone is NOT sufficient for inclusion.\n\nRecognize reasonable abbreviations, synonyms, closely related terminology,\nand semantically equivalent concepts when supported by the supplied text.\n\nDetermine whether the target research topic is substantively central to the\npaper's research problem, proposed method, system, architecture,\nimplementation, experiment, empirical analysis, or evaluation.\n\nApply every inclusion criterion IC1–IC5 and every exclusion criterion EC1–EC5\nindependently before making the final screening decision.\n\n\nCONSISTENCY RULES\n\nThe following rules are mandatory.\n\n1. If the abstract is missing, empty, unusable, or insufficient:\n   - abstract_available = \"No\"\n   - inclusion_criteria_met = \"No\"\n   - exclusion_criteria_applied = \"Yes\"\n   - failed_inclusion_criteria must include \"IC1\"\n   - applied_exclusion_criteria must include \"EC1\"\n   - screening_decision = \"Exclude\"\n\n2. If ALL inclusion criteria are satisfied and NO exclusion criterion applies:\n   - abstract_available = \"Yes\"\n   - inclusion_criteria_met = \"Yes\"\n   - exclusion_criteria_applied = \"No\"\n   - failed_inclusion_criteria = []\n   - applied_exclusion_criteria = []\n   - screening_decision = \"Include\"\n\n3. If ANY inclusion criterion fails:\n   - inclusion_criteria_met = \"No\"\n   - list every failed criterion identifier in failed_inclusion_criteria.\n\n4. If ANY exclusion criterion applies:\n   - exclusion_criteria_applied = \"Yes\"\n   - list every applicable criterion identifier in applied_exclusion_criteria.\n\n5. screening_decision may be \"Include\" ONLY when:\n   - abstract_available = \"Yes\"\n   - inclusion_criteria_met = \"Yes\"\n   - exclusion_criteria_applied = \"No\"\n\n6. In all other cases:\n   - screening_decision = \"Exclude\"\n\n\nSCREENING OUTPUT RULES\n\nrow_number:\nCopy the Row Number exactly as supplied above.\nReturn an integer only.\n\nkey:\nCopy the Key exactly as supplied above.\nReturn a string only.\n\nabstract_available:\nReturn EXACTLY one of these strings:\n\"Yes\"\n\"No\"\n\nNever return this field as an array, object, boolean, or number.\n\ninclusion_criteria_met:\nReturn EXACTLY one of these strings:\n\"Yes\"\n\"No\"\n\nReturn \"Yes\" ONLY when ALL inclusion criteria IC1–IC5 are satisfied.\nOtherwise return \"No\".\n\nNever return this field as an array, object, boolean, or number.\n\nexclusion_criteria_applied:\nReturn EXACTLY one of these strings:\n\"Yes\"\n\"No\"\n\nReturn \"Yes\" when ANY exclusion criterion EC1–EC5 applies.\nOtherwise return \"No\".\n\nNever return this field as an array, object, boolean, or number.\n\nfailed_inclusion_criteria:\nReturn an array of strings containing ONLY the identifiers of failed\ninclusion criteria.\n\nAllowed identifiers:\n\"IC1\"\n\"IC2\"\n\"IC3\"\n\"IC4\"\n\"IC5\"\n\nExample:\n[\"IC3\", \"IC4\", \"IC5\"]\n\nReturn [] when no inclusion criterion fails.\n\nDo not include explanations inside this array.\n\napplied_exclusion_criteria:\nReturn an array of strings containing ONLY the identifiers of exclusion\ncriteria that apply.\n\nAllowed identifiers:\n\"EC1\"\n\"EC2\"\n\"EC3\"\n\"EC4\"\n\"EC5\"\n\nExample:\n[\"EC4\", \"EC5\"]\n\nReturn [] when no exclusion criterion applies.\n\nDo not include explanations inside this array.\n\nscreening_decision:\nReturn EXACTLY one of these strings:\n\"Include\"\n\"Exclude\"\n\nReturn \"Include\" ONLY when:\n- abstract_available = \"Yes\"\n- inclusion_criteria_met = \"Yes\"\n- exclusion_criteria_applied = \"No\"\n\nOtherwise return \"Exclude\".\n\nscreening_reason:\nReturn one concise, evidence-based explanation for the final decision.\n\nThe reason must explicitly explain why the paper is or is not substantively\nrelevant to the target research topic.\n\nBase the explanation only on the supplied paper information.\n\nDo not cite external information.\nDo not include criterion arrays or JSON syntax inside the explanation.\n\nscreening_confidence:\nReturn a NUMBER from 0.00 to 1.00.\n\nThis value represents confidence in the screening decision,\nNOT a relevance score.\n\nUse higher confidence when the supplied evidence clearly supports the decision.\nUse lower confidence when the available evidence is ambiguous or limited.\n\nExamples:\n0.72\n0.91\n0.98\n\nDo not return:\n\"0.98\"\n\"98%\"\n\"High\"\n[\"0.98\"]\n\n\nFINAL VALIDATION BEFORE RETURNING\n\nBefore returning the result, verify that:\n\n- row_number is an integer.\n- key is a string.\n- abstract_available is exactly \"Yes\" or \"No\".\n- inclusion_criteria_met is exactly \"Yes\" or \"No\".\n- exclusion_criteria_applied is exactly \"Yes\" or \"No\".\n- failed_inclusion_criteria is an array of IC identifiers only.\n- applied_exclusion_criteria is an array of EC identifiers only.\n- screening_decision is exactly \"Include\" or \"Exclude\".\n- screening_reason is a string.\n- screening_confidence is a numeric value between 0 and 1.\n- The final decision is logically consistent with all other fields.\n\n\nOUTPUT REQUIREMENT\n\nReturn the structured object directly according to the required output schema.\n\nDo NOT wrap the result inside:\n\"output\"\n\"result\"\n\"data\"\n\"response\"\nor any other parent object.\n\nDo NOT return markdown.\nDo NOT return code fences.\nDo NOT return commentary.\nDo NOT return explanations outside the structured result.\nDo NOT add fields that are not defined in the required output schema.\nFollow the required data types exactly.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a strict and consistent scholarly-paper screening classifier.\n\nApply only the screening criteria provided in the user message.\n\nEvaluate each paper independently using only the supplied title, abstract,\nkeywords, publication type, year, journal, and metadata.\n\nDo not use external knowledge.\nDo not infer information that is not supported by the supplied paper data.\n\nEvaluate semantic relevance rather than exact keyword occurrence.\n\nPrioritize reproducibility, conservative judgment, logical consistency,\nand evidence-based classification.\n\nFollow the required structured output schema exactly.\n\nDo not add commentary, markdown, explanations, or fields outside\nthe required structured output."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        544,
+        192
+      ],
+      "id": "8b48d19f-107a-4b5e-a081-6eee9c22e7a2",
+      "name": "Basic LLM Chain — AI Screening Paper",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        384
+      ],
+      "id": "6feda71e-be5e-4ada-8510-efabbbd43154",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "DVgeWdOcTw430qCK",
+          "name": "Google Gemini(PaLM) Api account-msuresearch-test001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"row_number\": {\n      \"type\": \"integer\"\n    },\n    \"key\": {\n      \"type\": \"string\"\n    },\n    \"abstract_available\": {\n      \"type\": \"string\",\n      \"enum\": [\"Yes\", \"No\"]\n    },\n    \"inclusion_criteria_met\": {\n      \"type\": \"string\",\n      \"enum\": [\"Yes\", \"No\"]\n    },\n    \"exclusion_criteria_applied\": {\n      \"type\": \"string\",\n      \"enum\": [\"Yes\", \"No\"]\n    },\n    \"failed_inclusion_criteria\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"applied_exclusion_criteria\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"screening_decision\": {\n      \"type\": \"string\",\n      \"enum\": [\"Include\", \"Exclude\"]\n    },\n    \"screening_reason\": {\n      \"type\": \"string\"\n    },\n    \"screening_confidence\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 1\n    }\n  },\n  \"required\": [\n    \"row_number\",\n    \"key\",\n    \"abstract_available\",\n    \"inclusion_criteria_met\",\n    \"exclusion_criteria_applied\",\n    \"failed_inclusion_criteria\",\n    \"applied_exclusion_criteria\",\n    \"screening_decision\",\n    \"screening_reason\",\n    \"screening_confidence\"\n  ],\n  \"additionalProperties\": false\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        448,
+        400
+      ],
+      "id": "cde650c7-d5f0-47f8-9779-a07df95d731f",
+      "name": "Screening Output Parser"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1561259609,
+          "mode": "list",
+          "cachedResultName": "Screening_Result",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=1561259609"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "key": "={{ $json.output.key }}",
+            "row_number": "={{ $json.output.row_number }}",
+            "abstract_available": "={{ $json.output.abstract_available }}",
+            "inclusion_criteria_met": "={{ $json.output.inclusion_criteria_met }}",
+            "exclusion_criteria_applied": "={{ $json.output.exclusion_criteria_applied }}",
+            "failed_inclusion_criteria": "={{ $json.output.failed_inclusion_criteria.join(\" | \") }}",
+            "applied_exclusion_criteria": "={{ $json.output.applied_exclusion_criteria.join(\" | \") }}",
+            "screening_decision": "={{ $json.output.screening_decision }}",
+            "screening_reason": "={{ $json.output.screening_reason }}",
+            "screening_confidence": "={{ $json.output.screening_confidence }}",
+            "target_keyword": "={{ $('Set Research Screening Criteria').item.json.target_keyword }}"
+          },
+          "matchingColumns": [
+            "key"
+          ],
+          "schema": [
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "abstract_available",
+              "displayName": "abstract_available",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "inclusion_criteria_met",
+              "displayName": "inclusion_criteria_met",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "exclusion_criteria_applied",
+              "displayName": "exclusion_criteria_applied",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "failed_inclusion_criteria",
+              "displayName": "failed_inclusion_criteria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "applied_exclusion_criteria",
+              "displayName": "applied_exclusion_criteria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screening_decision",
+              "displayName": "screening_decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screening_reason",
+              "displayName": "screening_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "screening_confidence",
+              "displayName": "screening_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "target_keyword",
+              "displayName": "target_keyword",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        224
+      ],
+      "id": "68c2b156-d66c-40d5-b0d5-2ed85cac0c2c",
+      "name": "Append Screening Result",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9b6c5ec8-2ab9-461c-bfc3-94d5888c2fe1",
+              "leftValue": "={{ $json.screening_decision }}",
+              "rightValue": "Include",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        816,
+        432
+      ],
+      "id": "dbb6747c-8a04-4a4e-aa9c-e8f664bd5475",
+      "name": "IF — Include Paper?"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const paper = $('Set Research Screening Criteria').item.json;\n\nreturn {\n  json: {\n    source: paper.source ?? '',\n    title: paper.title ?? '',\n    authors: paper.authors ?? '',\n    year: paper.year ?? '',\n    journal: paper.journal ?? '',\n    doi: paper.doi ?? '',\n    link: paper.link ?? '',\n    abstract: paper.abstract ?? '',\n    keywords: paper.keywords ?? '',\n    citation_count: paper.citation_count ?? 0,\n    publication_type: paper.publication_type ?? '',\n    publisher_raw: paper.publisher_raw ?? '',\n    publisher: paper.publisher ?? '',\n    quartile: paper.quartile ?? '',\n    key: paper.key ?? '',\n    ai_status: 'pending'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        416
+      ],
+      "id": "acab6e33-4935-4176-b5ac-7d7de812839a",
+      "name": "Prepare Included Paper"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE",
+          "mode": "list",
+          "cachedResultName": "WF06_WF07_Literature_Quality",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 765659370,
+          "mode": "list",
+          "cachedResultName": "Analysis_Master_Include",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KuPG3_ntVaq0TbmhEdwwFua5zDpPGYi8RXkgJsujJKE/edit#gid=765659370"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ai_status": "pending",
+            "source": "={{ $json.source }}",
+            "title": "={{ $json.title }}",
+            "authors": "={{ $json.authors }}",
+            "year": "={{ $json.year }}",
+            "journal": "={{ $json.journal }}",
+            "doi": "={{ $json.doi }}",
+            "link": "={{ $json.link }}",
+            "abstract": "={{ $json.abstract }}",
+            "keywords": "={{ $json.keywords }}",
+            "citation_count": "={{ $json.citation_count }}",
+            "publication_type": "={{ $json.publication_type }}",
+            "publisher_raw": "={{ $json.publisher_raw }}",
+            "publisher": "={{ $json.publisher }}",
+            "quartile": "={{ $json.quartile }}",
+            "key": "={{ $json.key }}"
+          },
+          "matchingColumns": [
+            "key"
+          ],
+          "schema": [
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "authors",
+              "displayName": "authors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "year",
+              "displayName": "year",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "journal",
+              "displayName": "journal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "doi",
+              "displayName": "doi",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "link",
+              "displayName": "link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "abstract",
+              "displayName": "abstract",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "keywords",
+              "displayName": "keywords",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "citation_count",
+              "displayName": "citation_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publication_type",
+              "displayName": "publication_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publisher_raw",
+              "displayName": "publisher_raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publisher",
+              "displayName": "publisher",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quartile",
+              "displayName": "quartile",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "key",
+              "displayName": "key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_status",
+              "displayName": "ai_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1248,
+        416
+      ],
+      "id": "65972aee-65bf-4d83-a724-594e466c8c2e",
+      "name": "Append Analysis_Master_Include",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    workflow: 'WF7-Journal Metadata & Quality Enrichment',\n    start_ms: Date.now(),\n    started_at: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        176
+      ],
+      "id": "b88a1532-7a29-4e14-8a14-07b43fa87073",
+      "name": "Set Execution Start"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ======================================================\n// Build Completion Summary — WF7\n// Mode: Run Once for All Items\n// Input: Loop Over Papers → DONE\n// ======================================================\n\n// ------------------------------------------------------\n// 1. รับผลทั้งหมดจาก Loop\n// ------------------------------------------------------\nconst items = $input.all();\n\n// จำนวน Paper ต้นทางทั้งหมด\nconst total = $('Get row(s) – Analysis_Master').all().length;\n\n// ------------------------------------------------------\n// 2. นับ Include / Exclude\n//\n// TRUE path:\n// หลัง Append Analysis_Master_Include\n// จะมี ai_status = pending\n//\n// FALSE path:\n// จะมี screening_decision = Exclude\n// ------------------------------------------------------\nlet included = 0;\nlet excluded = 0;\nlet unknown = 0;\n\nfor (const item of items) {\n  const data = item.json || {};\n\n  const decision = String(\n    data.screening_decision ?? ''\n  ).trim().toLowerCase();\n\n  const aiStatus = String(\n    data.ai_status ?? ''\n  ).trim().toLowerCase();\n\n  // TRUE path\n  if (\n    decision === 'include' ||\n    aiStatus === 'pending'\n  ) {\n    included++;\n    continue;\n  }\n\n  // FALSE path\n  if (decision === 'exclude') {\n    excluded++;\n    continue;\n  }\n\n  // กรณีผิดปกติ\n  unknown++;\n}\n\n// ------------------------------------------------------\n// 3. อ่านเวลาเริ่มต้นจาก Set Execution Start\n// ------------------------------------------------------\nconst startData =\n  $('Set Execution Start').first().json || {};\n\nlet startMs = Number(\n  startData.start_ms ??\n  startData.started_ms ??\n  startData.start_time_ms ??\n  0\n);\n\n// fallback ถ้าไม่มี milliseconds\nif (!startMs) {\n  const startString =\n    startData.started_at ??\n    startData.start_time ??\n    startData.execution_start ??\n    '';\n\n  const parsed = Date.parse(startString);\n\n  if (!Number.isNaN(parsed)) {\n    startMs = parsed;\n  }\n}\n\n// ------------------------------------------------------\n// 4. เวลาสิ้นสุด / Duration\n// ------------------------------------------------------\nconst finishedMs = Date.now();\n\nconst durationMs =\n  startMs > 0\n    ? Math.max(0, finishedMs - startMs)\n    : 0;\n\nconst durationSeconds =\n  Math.round(durationMs / 1000);\n\nconst minutes =\n  Math.floor(durationSeconds / 60);\n\nconst seconds =\n  durationSeconds % 60;\n\nconst durationText =\n  minutes > 0\n    ? `${minutes} นาที ${seconds} วินาที`\n    : `${seconds} วินาที`;\n\n// ------------------------------------------------------\n// 5. Format เวลา Thailand\n// ใช้ Gregorian calendar เพื่อให้ปีแสดงเป็น 2026\n// ------------------------------------------------------\nconst formatBangkokTime = (timestamp) => {\n  if (!timestamp) {\n    return '-';\n  }\n\n  return new Date(timestamp).toLocaleString(\n    'th-TH-u-ca-gregory',\n    {\n      timeZone: 'Asia/Bangkok',\n      year: 'numeric',\n      month: '2-digit',\n      day: '2-digit',\n      hour: '2-digit',\n      minute: '2-digit',\n      second: '2-digit',\n      hour12: false\n    }\n  );\n};\n\nconst startedAt =\n  startMs > 0\n    ? formatBangkokTime(startMs)\n    : '-';\n\nconst finishedAt =\n  formatBangkokTime(finishedMs);\n\n// ------------------------------------------------------\n// 6. Execution ID\n// ------------------------------------------------------\nconst executionId =\n  String($execution.id ?? '-');\n\n// ------------------------------------------------------\n// 7. URL Analysis_Master_Include\n// ------------------------------------------------------\nconst analysisMasterIncludeUrl =\n  String(\n    startData.analysis_master_include_url ?? ''\n  ).trim();\n\n// ------------------------------------------------------\n// 8. ตรวจสอบผล\n// ------------------------------------------------------\nconst screened =\n  included + excluded;\n\nconst completionPercent =\n  total > 0\n    ? Math.round((screened / total) * 100)\n    : 0;\n\nconst includePercent =\n  total > 0\n    ? Math.round((included / total) * 100)\n    : 0;\n\n// ------------------------------------------------------\n// 9. Output → Build LINE Flex\n// ------------------------------------------------------\nreturn [\n  {\n    json: {\n      workflow: 'WF7',\n\n      total,\n      included,\n      excluded,\n\n      unknown,\n      screened,\n\n      completion_percent: completionPercent,\n      include_percent: includePercent,\n\n      duration_ms: durationMs,\n      duration_seconds: durationSeconds,\n      duration_minutes:\n        Number((durationSeconds / 60).toFixed(2)),\n\n      duration_text: durationText,\n\n      started_at: startedAt,\n      finished_at: finishedAt,\n\n      execution_id: executionId,\n\n      analysis_master_include_url:\n        analysisMasterIncludeUrl\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b68ec18c-5b79-4be9-8a78-8e56ef3bdbe6",
+      "name": "Build Completion Summary"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "toId",
+              "value": "=Ue36b6e7d9fc0906c025309812a4a6f07"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.line_message }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set (LINE Target)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        736,
+        0
+      ],
+      "id": "2f399592-de0e-4625-9a40-875dc76ce249",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// ======================================================\n// Code | Build LINE Flex — WF7 Screening\n// Mode: Run Once for Each Item\n// Input: Build Completion Summary\n// Theme: Pink / Compact\n// ======================================================\n\nconst data = $json;\n\n// ------------------------------------------------------\n// 1. อ่านข้อมูลสรุปผล WF7\n// ------------------------------------------------------\nconst total = Number(\n  data.total ?? 0\n);\n\nconst included = Number(\n  data.included ?? 0\n);\n\nconst excluded = Number(\n  data.excluded ?? 0\n);\n\nconst unknown = Number(\n  data.unknown ?? 0\n);\n\nconst durationText = String(\n  data.duration_text || '-'\n);\n\nconst startedAt = String(\n  data.started_at || '-'\n);\n\nconst finishedAt = String(\n  data.finished_at || '-'\n);\n\nconst executionId = String(\n  data.execution_id || '-'\n);\n\nconst includeSheetUrl = String(\n  data.analysis_master_include_url || ''\n).trim();\n\n// ------------------------------------------------------\n// 2. อ่านค่าที่ Summary คำนวณไว้แล้ว\n// ------------------------------------------------------\nconst screened = Number(\n  data.screened ?? (included + excluded)\n);\n\nconst completionPercent = Number(\n  data.completion_percent ??\n  (\n    total > 0\n      ? Math.round((screened / total) * 100)\n      : 0\n  )\n);\n\nconst includePercent = Number(\n  data.include_percent ??\n  (\n    total > 0\n      ? Math.round((included / total) * 100)\n      : 0\n  )\n);\n\n// ------------------------------------------------------\n// 3. Theme\n// ------------------------------------------------------\nconst pink = '#EC4899';\nconst pinkDark = '#DB2777';\nconst pinkLight = '#FDF2F8';\n\n// ------------------------------------------------------\n// 4. กำหนดสถานะ\n// ------------------------------------------------------\nlet statusTitle =\n  'คัดกรองบทความเสร็จสมบูรณ์';\n\nlet statusIcon = '✅';\n\nlet headerColor = pink;\n\nlet statusDetail =\n  `คัดกรองครบ ${screened}/${total} เรื่อง และพร้อมส่ง ${included} เรื่องไปยัง WF8`;\n\nif (total === 0) {\n\n  statusTitle =\n    'ไม่พบบทความสำหรับคัดกรอง';\n\n  statusIcon = 'ℹ️';\n  headerColor = '#64748B';\n\n  statusDetail =\n    'ไม่พบรายการใน Analysis_Master';\n\n} else if (\n  unknown > 0 ||\n  screened < total\n) {\n\n  statusTitle =\n    'คัดกรองเสร็จสิ้นบางส่วน';\n\n  statusIcon = '⚠️';\n  headerColor = '#F59E0B';\n\n  statusDetail =\n    `ประมวลผล ${screened}/${total} เรื่อง และมีรายการต้องตรวจสอบ ${unknown} เรื่อง`;\n}\n\n// ------------------------------------------------------\n// 5. ฟังก์ชันสร้าง Metric Row\n// ------------------------------------------------------\nfunction metricRow(\n  label,\n  value,\n  color = '#111827'\n) {\n\n  return {\n    type: 'box',\n    layout: 'horizontal',\n    spacing: 'sm',\n\n    contents: [\n\n      {\n        type: 'text',\n        text: label,\n        size: 'xs',\n        color: '#64748B',\n        flex: 4,\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text: String(value),\n        size: 'xs',\n        color,\n        weight: 'bold',\n        align: 'end',\n        flex: 2,\n        wrap: true\n      }\n\n    ]\n  };\n}\n\n// ------------------------------------------------------\n// 6. สร้าง LINE Flex Bubble\n// ------------------------------------------------------\nconst bubble = {\n\n  type: 'bubble',\n  size: 'mega',\n\n  // ----------------------------------------------------\n  // HEADER\n  // ----------------------------------------------------\n  header: {\n\n    type: 'box',\n    layout: 'vertical',\n    backgroundColor: headerColor,\n    paddingAll: '16px',\n    spacing: 'xs',\n\n    contents: [\n\n      {\n        type: 'text',\n        text:\n          `${statusIcon} ${statusTitle}`,\n        color: '#FFFFFF',\n        weight: 'bold',\n\n        // ลดจาก xl → lg\n        size: 'lg',\n\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text: statusDetail,\n        color: '#FFF1F7',\n\n        // ลดจาก sm → xs\n        size: 'xs',\n\n        wrap: true\n      }\n\n    ]\n  },\n\n  // ----------------------------------------------------\n  // BODY\n  // ----------------------------------------------------\n  body: {\n\n    type: 'box',\n    layout: 'vertical',\n    paddingAll: '16px',\n    spacing: 'sm',\n\n    contents: [\n\n      {\n        type: 'text',\n        text: '📚 WF7 • Paper Screening',\n        weight: 'bold',\n\n        // ลดจาก md → sm\n        size: 'sm',\n\n        color: '#111827',\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text:\n          `${completionPercent}% ประมวลผลครบ`,\n        weight: 'bold',\n\n        // ลดจาก xxl → xl\n        size: 'xl',\n\n        color: pinkDark,\n        wrap: true\n      },\n\n      {\n        type: 'text',\n        text:\n          `ผ่านการคัดกรอง ${includePercent}%`,\n        size: 'xs',\n        color: '#64748B',\n        wrap: true\n      },\n\n      {\n        type: 'separator',\n        color: '#F3E8EE',\n        margin: 'sm'\n      },\n\n      // ------------------------------------------------\n      // Screening Metrics\n      // ------------------------------------------------\n      {\n        type: 'text',\n        text: 'ผลการคัดกรอง',\n        weight: 'bold',\n        size: 'xs',\n        color: '#374151',\n        wrap: true\n      },\n\n      metricRow(\n        '📄 บทความทั้งหมด',\n        `${total} เรื่อง`,\n        '#111827'\n      ),\n\n      metricRow(\n        '✅ Include',\n        `${included} เรื่อง`,\n        '#16A34A'\n      ),\n\n      metricRow(\n        '❌ Exclude',\n        `${excluded} เรื่อง`,\n        '#DC2626'\n      ),\n\n      ...(unknown > 0\n        ? [\n            metricRow(\n              '⚠️ ตรวจสอบเพิ่มเติม',\n              `${unknown} เรื่อง`,\n              '#F59E0B'\n            )\n          ]\n        : []),\n\n      {\n        type: 'separator',\n        color: '#F3E8EE',\n        margin: 'sm'\n      },\n\n      // ------------------------------------------------\n      // เวลา\n      // ------------------------------------------------\n      {\n        type: 'box',\n        layout: 'vertical',\n        spacing: 'xs',\n\n        contents: [\n\n          {\n            type: 'text',\n            text:\n              `⏱️ ระยะเวลา: ${durationText}`,\n            size: 'xs',\n            color: '#374151',\n            weight: 'bold',\n            wrap: true\n          },\n\n          {\n            type: 'text',\n            text:\n              `🟢 เริ่ม: ${startedAt}`,\n            size: 'xxs',\n            color: '#6B7280',\n            wrap: true\n          },\n\n          {\n            type: 'text',\n            text:\n              `🏁 เสร็จ: ${finishedAt}`,\n            size: 'xxs',\n            color: '#6B7280',\n            wrap: true\n          }\n\n        ]\n      },\n\n      {\n        type: 'text',\n        text:\n          `Execution ID: ${executionId}`,\n        size: 'xxs',\n        color: '#9CA3AF',\n        wrap: true,\n        margin: 'xs'\n      },\n\n      // ------------------------------------------------\n      // Handoff WF8\n      // ------------------------------------------------\n      {\n        type: 'box',\n        layout: 'vertical',\n        backgroundColor: pinkLight,\n        cornerRadius: '8px',\n        paddingAll: '10px',\n        margin: 'sm',\n\n        contents: [\n\n          {\n            type: 'text',\n            text:\n              `➡️ พร้อมส่งต่อ WF8: ${included} เรื่อง`,\n            size: 'xs',\n            color: pinkDark,\n            weight: 'bold',\n            wrap: true\n          }\n\n        ]\n      }\n\n    ]\n  }\n\n};\n\n// ------------------------------------------------------\n// 7. ปุ่มเปิด Analysis_Master_Include\n// ------------------------------------------------------\nif (/^https?:\\/\\//i.test(includeSheetUrl)) {\n\n  bubble.footer = {\n\n    type: 'box',\n    layout: 'vertical',\n    spacing: 'xs',\n    paddingAll: '12px',\n\n    contents: [\n\n      {\n        type: 'button',\n        style: 'primary',\n        height: 'sm',\n\n        // ปุ่มสีชมพู\n        color: pinkDark,\n\n        action: {\n          type: 'uri',\n          label:\n            'เปิด Analysis_Master_Include',\n          uri: includeSheetUrl,\n\n          altUri: {\n            desktop: includeSheetUrl\n          }\n        }\n      },\n\n      {\n        type: 'text',\n        text:\n          'Google Sheets • Analysis_Master_Include',\n        size: 'xxs',\n        color: '#9CA3AF',\n        align: 'center',\n        margin: 'sm'\n      }\n\n    ]\n  };\n\n  bubble.styles = {\n    ...(bubble.styles || {}),\n\n    footer: {\n      separator: true\n    }\n  };\n}\n\n// ------------------------------------------------------\n// 8. Alt Text\n// ------------------------------------------------------\nconst altText =\n  total > 0\n    ? `${statusIcon} WF7 Screening: Include ${included}/${total} เรื่อง`\n    : `${statusIcon} WF7 Screening: ไม่พบบทความ`;\n\n// ------------------------------------------------------\n// 9. สร้าง Flex Message\n// ------------------------------------------------------\nconst lineMessage = {\n\n  type: 'flex',\n  altText,\n  contents: bubble\n\n};\n\n// ------------------------------------------------------\n// 10. Output\n// ------------------------------------------------------\nreturn {\n\n  json: {\n\n    ...data,\n\n    // สำหรับ LineMessageNode-Flex\n    line_flex_alt_text:\n      altText,\n\n    line_flex_contents:\n      bubble,\n\n    line_flex_contents_json:\n      JSON.stringify(bubble),\n\n    // Alias รองรับ Node เดิม\n    alt_text:\n      altText,\n\n    flex_content_json:\n      JSON.stringify(bubble),\n\n    // Message พร้อมส่ง\n    line_message:\n      lineMessage,\n\n    message:\n      lineMessage,\n\n    messages:\n      [lineMessage]\n\n  }\n\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "0799eb08-1c02-4c77-92b7-992ac192963b",
+      "name": "Code | Build LINE Flex"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n  {\n    to: $json.toId,\n    messages: [\n      {\n        type: \"flex\",\n        altText: $json.line_flex_alt_text,\n        contents:\n          typeof $json.line_flex_contents_json === \"string\"\n            ? JSON.parse($json.line_flex_contents_json)\n            : $json.line_flex_contents_json\n      }\n    ]\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        944,
+        0
+      ],
+      "id": "6440e8a6-dd89-478d-9065-080da8038ad0",
+      "name": "HTTP Request — Send LINE Flex",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "sVckxin8yAbxN328",
+          "name": "Header Auth account-LINE Messaging API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "be5f2d02-b517-4c23-8800-c1fa9524d51a",
+              "name": "target_keyword",
+              "value": "={{ $('Get Latest Research Request').last().json['คำค้นงานวิจัย'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9c65afab-7b4a-487e-8e64-6b362c0431b4",
+              "name": "=keyword_logic",
+              "value": "={{ (() => {   const raw = String(     $('Get Latest Research Request').last().json['คำค้นงานวิจัย'] ?? ''   ).trim();    const keywords = raw     .split(/\\r?\\n|[;,]+/)     .map(k => k.trim())     .filter(Boolean);    return keywords.length <= 1 ? 'SINGLE' : 'OR'; })() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -96,
+        192
+      ],
+      "id": "b6fb5528-9158-4cf5-85a2-9c4b3a739a0b",
+      "name": "Set Screening Config"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA",
+          "mode": "list",
+          "cachedResultName": "ฟอร์มรับคำสืบค้นงานวิจัย (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 149865736,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1a6RLhsYANSQ8kOZAXcoCZZqINQP-ja5sRAHLNbXncMA/edit#gid=149865736"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -752,
+        176
+      ],
+      "id": "eda91736-04c6-4dfa-ac92-45476e0b5ae0",
+      "name": "Get Latest Research Request",
+      "credentials": {
+        "googleApi": {
+          "id": "vhfcwgspzXBsmtC4",
+          "name": "Google Service Account account-forn8nresearch001"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 6
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        192
+      ],
+      "id": "68471e61-dc0c-4869-882d-73602d3c95cb",
+      "name": "Wait — Gemini Rate Limit",
+      "webhookId": "0bd92d53-a3ec-4270-be8a-8d7d0f50d299"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Execution Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) – Analysis_Master": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Papers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Papers": {
+      "main": [
+        [
+          {
+            "node": "Build Completion Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Screening Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Research Screening Criteria": {
+      "main": [
+        [
+          {
+            "node": "Wait — Gemini Rate Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain — AI Screening Paper": {
+      "main": [
+        [
+          {
+            "node": "Append Screening Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain — AI Screening Paper",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Screening Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Basic LLM Chain — AI Screening Paper",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Screening Result": {
+      "main": [
+        [
+          {
+            "node": "IF — Include Paper?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF — Include Paper?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Included Paper",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Papers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Included Paper": {
+      "main": [
+        [
+          {
+            "node": "Append Analysis_Master_Include",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Execution Start": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Research Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Completion Summary": {
+      "main": [
+        [
+          {
+            "node": "Code | Build LINE Flex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set (LINE Target)": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request — Send LINE Flex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code | Build LINE Flex": {
+      "main": [
+        [
+          {
+            "node": "Set (LINE Target)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Analysis_Master_Include": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Papers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Screening Config": {
+      "main": [
+        [
+          {
+            "node": "Set Research Screening Criteria",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Research Request": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) – Analysis_Master",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait — Gemini Rate Limit": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain — AI Screening Paper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "176c563c-89ab-4c3a-ada1-75fe8fc60a72",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f67c4ff45e6847c7f3306f768954dfbdc3b46082d96661961536c26e812cb4e9"
+  },
+  "nodeGroups": [],
+  "id": "noM2gGP3MfYYv7DW",
+  "tags": []
+}
